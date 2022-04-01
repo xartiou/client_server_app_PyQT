@@ -14,7 +14,7 @@ from subprocess import Popen
 А после закрытия приложения - возвращается код возврата. 
 '''
 
-command = 'regedit.exe' if platform.system().lower() == 'windows' else 'libreoffice'
+command = 'notepad.exe' if platform.system().lower() == 'windows' else 'libreoffice'
 
 
 # и это = ждать закрытия приложения

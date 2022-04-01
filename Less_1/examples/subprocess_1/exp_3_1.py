@@ -13,7 +13,7 @@ from subprocess import Popen
 '''
 
 # сравните = не ждать закрытия приложения
-command = 'regedit.exe' if platform.system().lower() == 'windows' else 'libreoffice'
+command = 'notepad.exe' if platform.system().lower() == 'windows' else 'libreoffice'
 process = Popen(command)
 
 print(process)
