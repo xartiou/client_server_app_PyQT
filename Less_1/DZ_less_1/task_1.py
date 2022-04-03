@@ -5,7 +5,7 @@
  При этом ip-адрес сетевого узла должен создаваться с помощью функции ip_address(). (Внимание! Аргументом сабпроцеса должен быть список, а не строка!!!
  Крайне желательно использование потоков.)
 '''
-# воспользуемся пинг-командой со следуюшими параметрами:
+# воспользуемся пинг-командой со следующими параметрами:
 '''
 -w интервал
 Определяет в миллисекундах время ожидания получения сообщения с эхо-ответом, 
@@ -17,8 +17,8 @@
 '''
 
 from ipaddress import ip_address
-from subprocess import Popen, PIPE
 from socket import gethostbyname, gaierror
+from subprocess import Popen, PIPE
 
 
 def host_ping(list_ip_addresses, timeout=500, requests=1):
