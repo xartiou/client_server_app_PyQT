@@ -66,7 +66,7 @@ def get_host_by_name(address, get_ip_address=False):
         return ip
         # обойдём исключение: socket.gaierror: [Errno 11001] getaddrinfo failed
     except gaierror:
-        print(f'!!! Не удалось получить ip адрес по доменну имени: {address}. Проверьте корректность !!!')
+        print(f'!!! Не удалось получить ip адрес по домену имени: {address}. Проверьте корректность !!!')
 
 
 if __name__ == '__main__':

@@ -1,0 +1,4 @@
+2022-03-21 09:03:17,130 CRITICAL client_log_config.py Критическая ошибка
+2022-03-21 09:03:17,130 ERROR    client_log_config.py Ошибка
+2022-03-21 09:03:17,130 DEBUG    client_log_config.py Отладочная информация
+2022-03-21 09:03:17,130 INFO     client_log_config.py Информационное сообщение
