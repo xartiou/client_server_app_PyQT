@@ -1,28 +1,33 @@
 """Конфиг клиентского логгера"""
-import logging
-import os
 import sys
-sys.path.append(os.path.join(os.getcwd(), '..'))
-from common.variables import ENCODING, LOGGING_LEVEL
+import os
+sys.path.append('../')
+import logging
+from common.variables import LOGGING_LEVEL
 
-# Создаем объект форматирования:
-CLIENT_FORMATTER = logging.Formatter('%(asctime)s %(levelname)-8s %(filename)-13s %(message)s')
+# создаём формировщик логов (formatter):
+client_formatter = logging.Formatter('%(asctime)s %(levelname)s %(filename)s %(message)s')
 
-# Подготовка имени файла для логирования:
-PATH = os.path.dirname(os.path.abspath(__file__))
-PATH = os.path.join(PATH, 'client.log')
+# Подготовка имени файла для логирования
+path = os.path.dirname(os.path.abspath(__file__))
+path = os.path.join(path, 'client.log')
 
-# Создаем файловый обработчик логирования:
-LOG_FILE = logging.FileHandler(PATH, encoding=ENCODING)
-LOG_FILE.setFormatter(CLIENT_FORMATTER)
+# создаём потоки вывода логов
+steam = logging.StreamHandler(sys.stderr)
+steam.setFormatter(client_formatter)
+steam.setLevel(logging.ERROR)
+log_file = logging.FileHandler(path, encoding='utf8')
+log_file.setFormatter(client_formatter)
 
-# Создаем регистратор и настраиваем его:
-LOGGER = logging.getLogger('client')
-LOGGER.addHandler(LOG_FILE)
-LOGGER.setLevel(LOGGING_LEVEL)
+# создаём регистратор и настраиваем его
+logger = logging.getLogger('client_dist')
+logger.addHandler(steam)
+logger.addHandler(log_file)
+logger.setLevel(LOGGING_LEVEL)
 
+# отладка
 if __name__ == '__main__':
-    LOGGER.critical('Критическоя ошибка')
-    LOGGER.error('Ошибка')
-    LOGGER.debug('Отладочная информация')
-    LOGGER.info('Информационное сообщение')
+    logger.critical('Test critical event')
+    logger.error('Test error ivent')
+    logger.debug('Test debug ivent')
+    logger.info('Test info ivent')
