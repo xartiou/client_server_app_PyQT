@@ -16,74 +16,86 @@
 Задает число отправляемых сообщений с эхо-запросом. По умолчанию - 4.
 '''
 
+import os
+import platform
+import subprocess
+import time
+import threading
 from ipaddress import ip_address
-from socket import gethostbyname, gaierror
-from subprocess import Popen, PIPE
+from pprint import pprint
+
+result = {'Доступные узлы': "", "Недоступные узлы": ""}  # словарь с результатами
+
+DNULL = open(os.devnull, 'w')  # заглушка, чтобы поток не выводился на экран
+# https://stackoverflow.com/questions/52435965/difference-between-os-devnull-and-subprocess-pipe
 
 
-def host_ping(list_ip_addresses, timeout=500, requests=1):
+def check_is_ipaddress(value):
     """
-    Функция проверяет доступность сетевых узлов
-    :param list_ip_addresses: список ip адресов и доменных имён
-    :param timeout: таймаут запросов, 500 = 0.5 сек
-    :param requests: количество запросов
-    :return []: возврат словаря с доступными и недоступными узлами
-    """
-    results = {'Доступные узлы': "", 'Недоступные узлы': ""}  # словарь с результатами
-    for address in list_ip_addresses:
-        try:
-            address = ip_address(address)
-        # обойдем такие исключения
-        # ValueError: 'yandex.ru' does not appear to be an IPv4 or IPv6 address
-        except ValueError:
-            address = get_host_by_name(address, get_ip_address=True)
-        process = Popen(f"ping {address} -w {timeout} -n {requests}", shell=False, stdout=PIPE)
-        process.wait()
-        # проверяем код завершения подпроцесса
-        if process.returncode == 0:
-            results['Доступные узлы'] += f"{str(address)}\n"
-            result_string = f'{address} - Узел доступен'
-        else:
-            results['Недоступные узлы'] += f"{str(address)}\n"
-            result_string = f'{address} - Узел недоступен'
-        print(result_string)
-    return results
-
-
-def get_host_by_name(address, get_ip_address=False):
-    """
-    Функция преобразует доменное имя к ip адресу
-    :param address: доменное имя
-    :param get_ip_address: если True преобразование ip адреса к объекту с помощью ip_address.ip_address
-    :return: возврат цифрового ip адреса или объекта адреса в зависимости от get_ip_address
+    Проверка является ли введённое значение IP адресом
+    :param value: присланные значения,
+    :return ipv4: полученный ip адрес из переданного значения
+        Exception ошибка при невозможности получения ip адреса из значения
     """
     try:
-        # преобразуем доменное имя к ip-адресу
-        ip = gethostbyname(address)
-        print(f'*** Доменное имя: {address} преобразовано в ip-адрес: {ip} ***')
-        if get_ip_address:
-            ip = ip_address(ip)
-        return ip
-        # обойдём исключение: socket.gaierror: [Errno 11001] getaddrinfo failed
-    except gaierror:
-        print(f'!!! Не удалось получить ip адрес по домену имени: {address}. Проверьте корректность !!!')
+        ipv4 = ip_address(value)
+    except ValueError:
+        raise Exception('Некорректный ip адрес')
+    return ipv4
+
+
+def ping(ipv4, result, get_list):
+    param = '-n' if platform.system().lower() == 'windows' else '-c'
+    response = subprocess.Popen(["ping", param, '1', '-w', '1', str(ipv4)],
+                                stdout=subprocess.PIPE)
+    if response.wait() == 0:
+        result["Доступные узлы"] += f"{ipv4}\n"
+        res = f"{ipv4} - Узел доступен"
+        if not get_list:  # если результаты не надо добавлять в словарь, значит отображаем
+            print(res)
+        return res
+    else:
+        result["Недоступные узлы"] += f"{ipv4}\n"
+        res = f"{str(ipv4)} - Узел недоступен"
+        if not get_list:  # если результаты не надо добавлять в словарь, значит отображаем
+            print(res)
+        return res
+
+
+def host_ping(hosts_list, get_list=False):
+    """
+    Проверка доступности хостов
+    :param hosts_list: список хостов
+    :param get_list: признак нужно ли отдать результат в виде словаря (для задания #3)
+    :return словарь результатов проверки, если требуется
+    """
+    print("Начинаю проверку доступности узлов...")
+    threads = []
+    for host in hosts_list:  # проверяем, является ли значение ip-адресом
+        try:
+            ipv4 = check_is_ipaddress(host)
+        except Exception as e:
+            print(f'{host} - {e} воспринимаю как доменное имя')
+            ipv4 = host
+
+        thread = threading.Thread(target=ping, args=(ipv4, result, get_list), daemon=True)
+        thread.start()
+        threads.append(thread)
+
+    for thread in threads:
+        thread.join()
+
+    if get_list:        # если требуется вернуть словарь (для задачи №3), то возвращаем
+        return result
 
 
 if __name__ == '__main__':
-    ip_addresses = ['mail.ru', 'loogle.com', 'yandex.ru', 'google.com', '1.1.1.0', '192.168.0.1', '117.145.1.80']
-    host_ping(ip_addresses)
-
-"""
-Результат:
-*** Доменное имя: mail.ru преобразовано в ip-адрес: 217.69.139.200 ***
-217.69.139.200 - Узел доступен
-*** Доменное имя: loogle.com преобразовано в ip-адрес: 3.64.163.50 ***
-3.64.163.50 - Узел недоступен
-*** Доменное имя: yandex.ru преобразовано в ip-адрес: 77.88.55.66 ***
-77.88.55.66 - Узел доступен
-*** Доменное имя: google.com преобразовано в ip-адрес: 64.233.164.138 ***
-64.233.164.138 - Узел доступен
-1.1.1.0 - Узел доступен
-192.168.0.1 - Узел доступен
-117.145.1.80 - Узел недоступен
-"""
+    # список проверяемых хостов
+    hosts_list = ['192.168.8.1', '8.8.8.8', 'yandex.ru', 'google.com',
+                  '0.0.0.1', '0.0.0.2', '0.0.0.3', '0.0.0.4', '0.0.0.5',
+                  '0.0.0.6', '0.0.0.7', '0.0.0.8', '0.0.0.9', '0.0.1.0']
+    start = time.time()
+    host_ping(hosts_list)
+    end = time.time()
+    print(f'total time: {int(end - start)}')
+    pprint(result)
