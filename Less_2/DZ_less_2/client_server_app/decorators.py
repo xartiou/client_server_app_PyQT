@@ -9,9 +9,9 @@ else:
     LOGGER = logging.getLogger('server')
 
 
-def log(func):
-    def decorated(*args, **kwargs):
-        func_to_log = func(*args, **kwargs)
-        LOGGER.debug(f'Функция {func.__name__}() вызвана из функции {traceback.format_stack()[0].strip().split()[-1]}')
-        return func_to_log
-    return decorated
+def log(func_to_log):
+    def log_saver(*args , **kwargs):
+        LOGGER.debug(f'Была вызвана функция {func_to_log.__name__} c параметрами {args} , {kwargs}. Вызов из модуля {func_to_log.__module__}')
+        ret = func_to_log(*args , **kwargs)
+        return ret
+    return log_saver
