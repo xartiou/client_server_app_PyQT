@@ -8,7 +8,7 @@ import dis
 
 
 # Метакласс для проверки корректности клиентов:
-class ClientMaker(type):
+class ClientVerifier(type):
     def __init__(cls, clsname, bases, clsdict):
         # Список методов, которые используются в функциях класса:
         methods = []
@@ -16,7 +16,7 @@ class ClientMaker(type):
             # Пробуем
             try:
                 ret = dis.get_instructions(clsdict[func])
-                # Если не функция то ловим исключение
+                # Если не функция, то ловим исключение
             except TypeError:
                 pass
             else:
@@ -38,7 +38,7 @@ class ClientMaker(type):
 
 
 # Метакласс для проверки соответствия сервера:
-class ServerMaker(type):
+class ServerVerifier(type):
     def __init__(cls, clsname, bases, clsdict):
         # clsname - экземпляр метакласса - Server
         # bases - кортеж базовых классов - ()
