@@ -7,7 +7,7 @@ from common.variables import MAX_PACKAGE_LENGTH, ENCODING
 
 sys.path.append(os.path.join(os.getcwd(), '..'))
 from decorators import log
-from errors import IncorrectDataRecivedError, NonDictInputError
+from errors import IncorrectDataReceivedError, NoDictInputError
 
 @log
 def get_message(client):
@@ -24,8 +24,8 @@ def get_message(client):
         response = json.loads(json_response)
         if isinstance(response, dict):
             return response
-        raise IncorrectDataRecivedError
-    raise IncorrectDataRecivedError
+        raise IncorrectDataReceivedError
+    raise IncorrectDataReceivedError
 
 @log
 def send_message(sock, message):
@@ -37,7 +37,7 @@ def send_message(sock, message):
     :return:
     '''
     if not isinstance(message, dict):
-        raise NonDictInputError
+        raise NoDictInputError
     js_message = json.dumps(message)
     encoded_message = js_message.encode(ENCODING)
     sock.send(encoded_message)
