@@ -12,7 +12,7 @@ class Example(QMainWindow):
 
     def initUI(self):
         # Действие (Action) будет совершаться при нажатии на кнопку
-        exitAction = QAction(QIcon('exit.png'), 'Exit', self)
+        exitAction = QAction(QIcon('exit.jpg'), 'Exit', self)
         exitAction.setShortcut('Ctrl+Q')
         exitAction.triggered.connect(qApp.quit)
 
