@@ -1,84 +1,31 @@
-import unittest
-import os
 import sys
+sys.path.append('../')
+from client import create_presence, process_response_ans
+from common.variables import *
+import unittest
+from errors import ReqFieldMissingError, ServerError
 
-sys.path.append(os.path.join(os.getcwd(), '..'))
-from common.variables import ACTION, PRESENCE, TIME, USER, ACCOUNT_NAME, \
-    ERROR, RESPONSE
-from client import create_presence, process_answer
 
+# Класс с тестами
+class TestClass(unittest.TestCase):
+    # тест корректного запроса
+    def test_def_presense(self):
+        test = create_presence('Guest')
+        test[TIME] = 1.1  # время необходимо приравнять принудительно иначе тест никогда не будет пройден
+        self.assertEqual(test, {ACTION: PRESENCE, TIME: 1.1, USER: {ACCOUNT_NAME: 'Guest'}})
 
-class TestClientClass(unittest.TestCase):
-    test_time = 1.1
-    account_name = 'random_name'
-    default_account_name = 'Guest'
+    # тест корректного разбора ответа 200
+    def test_200_ans(self):
+        self.assertEqual(process_response_ans({RESPONSE: 200}), '200 : OK')
 
-    def setUp(self) -> None:
-        pass
+    # тест корректного разбора 400
+    def test_400_ans(self):
+        self.assertRaises(ServerError, process_response_ans, {RESPONSE: 400, ERROR: 'Bad Request'})
 
-    def tearDown(self) -> None:
-        pass
+    # тест исключения без поля RESPONSE
+    def test_no_response(self):
+        self.assertRaises(ReqFieldMissingError, process_response_ans, {ERROR: 'Bad Request'})
 
-    def test_create_presence_returns_dict(self):
-        test = create_presence()
-        self.assertIsInstance(test, dict)
-
-    def test_create_presence_without_arg_dict_equal(self):
-        presence = {
-            ACTION: PRESENCE,
-            TIME: self.test_time,
-            USER: {
-                ACCOUNT_NAME: 'Guest'
-            }
-        }
-
-        test = create_presence()
-        test[TIME] = self.test_time
-        self.assertDictEqual(test, presence)
-
-    def test_create_presence_with_arg_dict_equal(self):
-        presense = {
-            ACTION: PRESENCE,
-            TIME: self.test_time,
-            USER: {
-                ACCOUNT_NAME: self.account_name
-            }
-        }
-
-        test = create_presence(self.account_name)
-        test[TIME] = self.test_time
-        self.assertDictEqual(test, presense)
-
-    def test_process_answer_returns_string(self):
-        test = process_answer({RESPONSE: 200})
-        self.assertIsInstance(test, str)
-
-    def test_process_answer_raises_value_error(self):
-        self.assertRaises(
-            ValueError,
-            process_answer,
-            ({ERROR: 'Bad Request'},)
-        )
-
-    def test_process_answer_success_equal(self):
-        status_code = 200
-        message = {
-            RESPONSE: status_code,
-        }
-
-        test = process_answer(message)
-        self.assertEqual(test, f'{status_code} : OK')
-
-    def test_process_answer_error_equal(self):
-        error_msg = 'Bad Request'
-        status_code = 400
-        message = {
-            RESPONSE: status_code,
-            ERROR: error_msg
-        }
-
-        test = process_answer(message)
-        self.assertEqual(test, f'{status_code} : {error_msg}')
 
 if __name__ == '__main__':
     unittest.main()
