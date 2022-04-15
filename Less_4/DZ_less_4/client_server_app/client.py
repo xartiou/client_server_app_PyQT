@@ -1,13 +1,17 @@
-import argparse
+import sys
+import json
 import socket
-import threading
 import time
-
-from client_database import ClientDatabase
+import argparse
+import logging
+import threading
+import logs.client_log_config
+from common.variables import *
 from common.utils import *
-from decorators import log
 from errors import IncorrectDataRecivedError, ReqFieldMissingError, ServerError
+from decorators import log
 from metaclasses import ClientVerifier
+from client_database import ClientDatabase
 
 # Инициализация клиентского логера
 logger = logging.getLogger('client_dist')
@@ -79,11 +83,9 @@ class ClientSender(threading.Thread, metaclass=ClientVerifier):
             # Если отправка сообщения - соответствующий метод
             if command == 'message':
                 self.create_message()
-
             # Вывод помощи
             elif command == 'help':
                 self.print_help()
-
             # Выход. Отправляем сообщение серверу о выходе.
             elif command == 'exit':
                 with sock_lock:
@@ -91,7 +93,6 @@ class ClientSender(threading.Thread, metaclass=ClientVerifier):
                         send_message(self.sock, self.create_exit_message())
                     except Exception as e:
                         print(e)
-                        pass
                     print('Завершение соединения.')
                     logger.info('Завершение работы по команде пользователя.')
                 # Задержка неоходима, чтобы успело уйти сообщение о выходе

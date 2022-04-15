@@ -1,5 +1,5 @@
 import argparse
-import configparser
+import configparser  # https://docs.python.org/3/library/configparser.html
 import os
 import select
 import socket
@@ -11,14 +11,14 @@ from PyQt5.QtWidgets import QApplication, QMessageBox
 from common.utils import *
 from decorators import log
 from descryptors import Port
-from metaclasses import ServerVerifier
+from metaclasses import ServerMaker
 from server_database import ServerStorage
 from server_gui import MainWindow, gui_create_model, HistoryWindow, create_stat_model, ConfigWindow
 
 # Инициализация логирования сервера.
 logger = logging.getLogger('server_dist')
 
-# Флаг, что был подключён новый пользователь, нужен чтобы не мучать BD
+# Флаг, что был подключён новый пользователь, нужен чтобы не мучить BD
 # постоянными запросами на обновление
 new_connection = False
 conflag_lock = threading.Lock()
@@ -26,10 +26,10 @@ conflag_lock = threading.Lock()
 
 # Парсер аргументов командной строки.
 @log
-def arg_parser():
+def arg_parser(default_port, default_address):
     parser = argparse.ArgumentParser()
-    parser.add_argument('-p', default=DEFAULT_PORT, type=int, nargs='?')
-    parser.add_argument('-a', default='', nargs='?')
+    parser.add_argument('-p', default=default_port, type=int, nargs='?')
+    parser.add_argument('-a', default=default_address, nargs='?')
     namespace = parser.parse_args(sys.argv[1:])
     listen_address = namespace.a
     listen_port = namespace.p
@@ -37,7 +37,7 @@ def arg_parser():
 
 
 # Основной класс сервера
-class Server(threading.Thread, metaclass=ServerVerifier):
+class Server(threading.Thread, metaclass=ServerMaker):
     port = Port()
 
     def __init__(self, listen_address, listen_port, database):
@@ -62,9 +62,7 @@ class Server(threading.Thread, metaclass=ServerVerifier):
 
     def init_socket(self):
         logger.info(
-            f'Запущен сервер, порт для подключений: {self.port}, '
-            f'адрес с которого принимаются подключения: {self.addr}. '
-            f'Если адрес не указан, принимаются соединения с любых адресов.')
+            f'Запущен сервер, порт для подключений: {self.port} , адрес с которого принимаются подключения: {self.addr}. Если адрес не указан, принимаются соединения с любых адресов.')
         # Готовим сокет
         transport = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         transport.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
@@ -101,7 +99,7 @@ class Server(threading.Thread, metaclass=ServerVerifier):
             except OSError as err:
                 logger.error(f'Ошибка работы с сокетами: {err}')
 
-            # принимаем сообщения и если ошибка, исключаем клиента.
+            # принимаем сообщения, и если ошибка, исключаем клиента.
             if recv_data_lst:
                 for client_with_message in recv_data_lst:
                     try:
@@ -131,25 +129,22 @@ class Server(threading.Thread, metaclass=ServerVerifier):
                     del self.names[message[DESTINATION]]
             self.messages.clear()
 
-    # Функция адресной отправки сообщения определённому клиенту.
-    # Принимает словарь сообщение, список зарегистрированных
-    # пользователей и слушающие сокеты. Ничего не возвращает.
+    # Функция адресной отправки сообщения определённому клиенту. Принимает словарь:
+    # сообщение, список зарегистрированых пользователей и слушающие сокеты. Ничего не возвращает.
     def process_message(self, message, listen_socks):
-        if message[DESTINATION] in self.names and \
-                self.names[message[DESTINATION]] in listen_socks:
+        if message[DESTINATION] in self.names and self.names[message[DESTINATION]
+        ] in listen_socks:
             send_message(self.names[message[DESTINATION]], message)
-            logger.info(f'Отправлено сообщение пользователю {message[DESTINATION]} '
-                        f'от пользователя {message[SENDER]}.')
-        elif message[DESTINATION] in self.names \
-                and self.names[message[DESTINATION]] not in listen_socks:
+            logger.info(f'Отправлено сообщение пользователю {message[DESTINATION]} от пользователя {message[SENDER]}.')
+        elif message[DESTINATION] in self.names and self.names[message[DESTINATION]] not in listen_socks:
             raise ConnectionError
         else:
             logger.error(
-                f'Пользователь {message[DESTINATION]} не зарегистрирован '
-                f'на сервере, отправка сообщения невозможна.')
+                f'Пользователь {message[DESTINATION]} не зарегистрирован на сервере, отправка сообщения невозможна.')
 
-    # Обработчик сообщений от клиентов, принимает словарь - сообщение от клиента,
-    # проверяет корректность, отправляет словарь-ответ в случае необходимости.
+    # Обработчик сообщений от клиентов, принимает словарь: сообщение от клиента,
+    # проверяет: корректность,
+    # отправляет: словарь-ответ в случае необходимости.
     def process_client_message(self, message, client):
         global new_connection
         logger.debug(f'Разбор сообщения от клиента : {message}')
@@ -174,15 +169,15 @@ class Server(threading.Thread, metaclass=ServerVerifier):
                 client.close()
             return
 
-        # Если это сообщение, то добавляем его в очередь сообщений. Ответ не требуется.
-        elif ACTION in message \
-                and message[ACTION] == MESSAGE \
-                and DESTINATION in message \
-                and TIME in message \
-                and SENDER in message \
-                and MESSAGE_TEXT in message:
+        # Если это сообщение, то добавляем его в очередь сообщений.
+        # Ответ не требуется.
+        elif ACTION in message and message[ACTION] == MESSAGE and DESTINATION in message and TIME in message \
+                and SENDER in message and MESSAGE_TEXT in message and self.names[message[SENDER]] == client:
             self.messages.append(message)
+            self.database.process_message(
+                message[SENDER], message[DESTINATION])
             return
+
         # Если клиент выходит
         elif ACTION in message and message[ACTION] == EXIT and ACCOUNT_NAME in message \
                 and self.names[message[ACCOUNT_NAME]] == client:
@@ -195,6 +190,7 @@ class Server(threading.Thread, metaclass=ServerVerifier):
             with conflag_lock:
                 new_connection = True
             return
+
         # Если это запрос контакт-листа
         elif ACTION in message and message[ACTION] == GET_CONTACTS and USER in message and \
                 self.names[message[USER]] == client:
@@ -221,21 +217,13 @@ class Server(threading.Thread, metaclass=ServerVerifier):
             response[LIST_INFO] = [user[0]
                                    for user in self.database.users_list()]
             send_message(client, response)
+
         # Иначе отдаём Bad request
         else:
             response = RESPONSE_400
             response[ERROR] = 'Запрос некорректен.'
             send_message(client, response)
             return
-
-
-def print_help():
-    print('Поддерживаемые комманды:')
-    print('users - список известных пользователей')
-    print('connected - список подключённых пользователей')
-    print('loghist - история входов пользователя')
-    print('exit - завершение работы сервера.')
-    print('help - вывод справки по поддерживаемым командам')
 
 
 def main():
@@ -246,7 +234,7 @@ def main():
     config.read(f"{dir_path}/{'server.ini'}")
 
     # Загрузка параметров командной строки, если нет параметров, то задаём
-    # значения по умолчанию.
+    # значения по умоланию.
     listen_address, listen_port = arg_parser(
         config['SETTINGS']['Default_port'], config['SETTINGS']['Listen_Address'])
 
