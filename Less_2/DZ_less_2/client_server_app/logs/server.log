@@ -1,0 +1,4 @@
+2022-04-14 11:35:17,525 DEBUG decorators.py Была вызвана функция process_response_ans c параметрами ({'response': 200},) , {}. Вызов из модуля client
+2022-04-14 11:35:17,527 DEBUG decorators.py Была вызвана функция process_response_ans c параметрами ({'response': 400, 'error': 'Bad Request'},) , {}. Вызов из модуля client
+2022-04-14 11:35:17,528 DEBUG decorators.py Была вызвана функция create_presence c параметрами ('Guest',) , {}. Вызов из модуля client
+2022-04-14 11:35:17,529 DEBUG decorators.py Была вызвана функция process_response_ans c параметрами ({'error': 'Bad Request'},) , {}. Вызов из модуля client
