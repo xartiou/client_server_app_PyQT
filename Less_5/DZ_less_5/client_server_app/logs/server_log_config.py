@@ -1,4 +1,3 @@
-"""Конфиг серверного логгера"""
 import sys
 sys.path.append('../')
 import logging
@@ -29,6 +28,6 @@ logger.setLevel(LOGGING_LEVEL)
 # отладка
 if __name__ == '__main__':
     logger.critical('Test critical event')
-    logger.error('Test error event')
-    logger.debug('Test debug event')
-    logger.info('Test info event')
+    logger.error('Test error ivent')
+    logger.debug('Test debug ivent')
+    logger.info('Test info ivent')
