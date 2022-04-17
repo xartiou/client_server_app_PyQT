@@ -11,7 +11,7 @@ class ServerError(Exception):
         return self.text
 
 
-class IncorrectDataRecievedError(Exception):
+class IncorrectDataRecivedError(Exception):
     """
     Исключение  - некорректные данные получены от сокета
     """
