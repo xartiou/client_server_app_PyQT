@@ -92,7 +92,7 @@ print(f'{IP1}')
 print(int(IP1))
 
 # альтернативный способ вычисления ip-адреса как целого числа
-address_bytes = [int(x) for x in '192.168.1.0'.split('.')]  # [192, 168, 1, 0]
+address_bytes = [int(x) for x in '192.168.1.0'.split('.')]  # [192*, 168, 1, 0]
 ip_int = (
     address_bytes[0] * (256 ** 3) +
     address_bytes[1] * (256 ** 2) +
