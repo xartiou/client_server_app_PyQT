@@ -1,13 +1,12 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'client.ui'
+# Form implementation generated from reading ui file 'client_dist.ui'
 #
 # Created by: PyQt5 UI code generator 5.11.3
 #
 # WARNING! All changes made in this file will be lost!
 
 from PyQt5 import QtCore, QtGui, QtWidgets
-
 
 class Ui_MainClientWindow(object):
     def setupUi(self, MainClientWindow):
@@ -32,7 +31,7 @@ class Ui_MainClientWindow(object):
         self.text_message.setGeometry(QtCore.QRect(300, 360, 441, 71))
         self.text_message.setObjectName("text_message")
         self.label_new_message = QtWidgets.QLabel(self.centralwidget)
-        self.label_new_message.setGeometry(QtCore.QRect(300, 330, 450, 16))  # Правка тут
+        self.label_new_message.setGeometry(QtCore.QRect(300, 330, 450, 16)) # Правка тут
         self.label_new_message.setObjectName("label_new_message")
         self.list_contacts = QtWidgets.QListView(self.centralwidget)
         self.list_contacts.setGeometry(QtCore.QRect(10, 20, 251, 411))
