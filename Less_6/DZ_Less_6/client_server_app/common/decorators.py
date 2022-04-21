@@ -1,53 +1,74 @@
 """Декораторы"""
-import sys, os
-sys.path.append(os.path.join(os.getcwd(), '..'))
+import socket
 import logging
-import logs.server_log_config
+import sys
+sys.path.append('../')
 import logs.client_log_config
-import traceback
-import inspect
+import logs.server_log_config
 
-# Метод определения модуля, источника запуска.
-# Метод find () возвращает индекс первого вхождения искомой подстроки,
-# если он найден в данной строке.
-# Если его не найдено, - возвращает -1.
-# os.path.split(sys.argv[0])[1]
-if sys.argv[0].find('client_side.py') == -1:
-    # если не клиент, то сервер
-    CURRENT_LOGGER = logging.getLogger('server_side.py')
+
+# метод определения модуля, источника запуска.
+if sys.argv[0].find('client_dist') == -1:
+    # если не клиент то сервер!
+    logger = logging.getLogger('server_dist')
 else:
-    # если не сервер, то клиент
-    CURRENT_LOGGER = logging.getLogger('client_side.py')
+    # иначе сервер
+    logger = logging.getLogger('client_dist')
 
 
-# Реализация в виде функции
-def log(function_to_log):
-    """Функция-декоратор"""
+def log(func_to_log):
+    """
+    Декоратор, выполняющий логирование вызовов функций.
+    Сохраняет события типа debug, содержащие
+    информацию о имени вызываемой функиции, параметры с которыми
+    вызывается функция, и модуль, вызывающий функцию.
+    """
 
     def log_saver(*args, **kwargs):
-        """Обертка"""
-        ret_func = function_to_log(*args, **kwargs)
-        CURRENT_LOGGER.debug(f'Была вызвана функция {function_to_log.__name__} c параметрами {args}, {kwargs}. '
-                     f'Вызов из модуля {function_to_log.__module__}. '
-                     f'Вызов из'f' функции {traceback.format_stack()[0].strip().split()[-1]}.')
-                     # f'Вызов из функции {inspect.stack()[1][3]}', stacklevel=2)
-        return ret_func
+        logger.debug(
+            f'Была вызвана функция {func_to_log.__name__} c параметрами {args} , {kwargs}. '
+            f'Вызов из модуля {func_to_log.__module__}')
+        ret = func_to_log(*args, **kwargs)
+        return ret
 
     return log_saver
 
 
-# Реализация в виде класса
-class Log:
-    """Класс-декоратор"""
+def login_required(func):
+    """
+    Декоратор, проверяющий, что клиент авторизован на сервере.
+    Проверяет, что передаваемый объект сокета находится в
+    списке авторизованных клиентов.
+    За исключением передачи словаря-запроса
+    на авторизацию. Если клиент не авторизован,
+    генерирует исключение TypeError
+    """
 
-    def __call__(self, function_to_log):
-        def log_saver(*args, **kwargs):
-            """Обертка"""
-            ret_func = function_to_log(*args, **kwargs)
-            CURRENT_LOGGER.debug(f'Была вызвана функция {function_to_log.__name__} c параметрами {args}, {kwargs}. '
-                         f'Вызов из модуля {function_to_log.__module__}. Вызов из'
-                         f' функции {traceback.format_stack()[0].strip().split()[-1]}.')
-                         # f'Вызов из функции {inspect.stack()[1][3]}', stacklevel=2)
-            return ret_func
+    def checker(*args, **kwargs):
+        # проверяем, что первый аргумент - экземпляр MessageProcessor
+        # Импортить необходимо тут, иначе ошибка рекурсивного импорта.
+        from server.core import MessageProcessor
+        from common.variables import ACTION, PRESENCE
+        if isinstance(args[0], MessageProcessor):
+            found = False
+            for arg in args:
+                if isinstance(arg, socket.socket):
+                    # Проверяем, что данный сокет есть в списке names класса
+                    # MessageProcessor
+                    for client in args[0].names:
+                        if args[0].names[client] == arg:
+                            found = True
 
-        return log_saver
+            # Теперь надо проверить, что передаваемые аргументы не presence
+            # сообщение. Если presence, то разрешаем
+            for arg in args:
+                if isinstance(arg, dict):
+                    if ACTION in arg and arg[ACTION] == PRESENCE:
+                        found = True
+            # Если не не авторизован и не сообщение начала авторизации, то
+            # вызываем исключение.
+            if not found:
+                raise TypeError
+        return func(*args, **kwargs)
+
+    return checker
