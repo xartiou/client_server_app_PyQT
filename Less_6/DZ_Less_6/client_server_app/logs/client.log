@@ -1,2 +1,6 @@
 2022-04-15 12:12:33,253 INFO client.py Запущен клиент с параметрами: адрес сервера: 127.0.0.1 , порт: 7777, имя пользователя: 1
 2022-04-15 12:13:08,938 INFO client.py Запущен клиент с параметрами: адрес сервера: 127.0.0.1 , порт: 7777, имя пользователя: xartiou
+2022-04-21 11:59:35,709 CRITICAL client_log_config.py Test critical event
+2022-04-21 11:59:35,711 ERROR client_log_config.py Test error ivent
+2022-04-21 11:59:35,711 DEBUG client_log_config.py Test debug ivent
+2022-04-21 11:59:35,711 INFO client_log_config.py Test info ivent
