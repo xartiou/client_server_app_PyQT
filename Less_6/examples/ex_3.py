@@ -73,7 +73,7 @@ def _decrypt(ciphered_text, key):
     # msg - b'The rain in Spain               '
 
     # убираем пробелы, добавленные ранее для соблюдения условия кратности 16-ти
-    msg = msg.decode().strip().encode()  #  не указана кодировка - нужно указать
+    msg = msg.decode().strip().encode()  #  ! не указана кодировка - нужно указать
     # msg - b'The rain in Spain'
     return msg
 
