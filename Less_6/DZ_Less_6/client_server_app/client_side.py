@@ -9,7 +9,7 @@ from PyQt5.QtWidgets import QApplication, QMessageBox
 from common.variables import *
 from common.errors import ServerError
 from common.decorators import log
-from client.client_database import ClientDatabase
+from client.database import ClientDatabase
 from client.transport import ClientTransport
 from client.main_window import ClientMainWindow
 from client.start_dialog import UserNameDialog
