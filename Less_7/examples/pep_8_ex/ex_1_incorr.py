@@ -1,3 +1,5 @@
+
+
 class Rectangle(Blob):
     def __init__(self, width, height, color='black', emphasis=None, highlight=0):
         if width == 0 \
