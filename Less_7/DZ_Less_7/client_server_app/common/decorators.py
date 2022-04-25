@@ -9,7 +9,7 @@ import logs.server_log_config
 
 # метод определения модуля, источника запуска.
 if sys.argv[0].find('client_dist') == -1:
-    # если не клиент то сервер!
+    # если не клиент, то сервер!
     logger = logging.getLogger('server_dist')
 else:
     # иначе сервер
@@ -20,7 +20,7 @@ def log(func_to_log):
     """
     Декоратор, выполняющий логирование вызовов функций.
     Сохраняет события типа debug, содержащие
-    информацию о имени вызываемой функиции, параметры с которыми
+    информации об имени вызываемой функции, параметры с которыми
     вызывается функция, и модуль, вызывающий функцию.
     """
 
@@ -46,7 +46,7 @@ def login_required(func):
 
     def checker(*args, **kwargs):
         # проверяем, что первый аргумент - экземпляр MessageProcessor
-        # Импортить необходимо тут, иначе ошибка рекурсивного импорта.
+        # Импорт необходимо тут, иначе ошибка рекурсивного импорта.
         from server.core import MessageProcessor
         from common.variables import ACTION, PRESENCE
         if isinstance(args[0], MessageProcessor):
@@ -65,7 +65,7 @@ def login_required(func):
                 if isinstance(arg, dict):
                     if ACTION in arg and arg[ACTION] == PRESENCE:
                         found = True
-            # Если не не авторизован и не сообщение начала авторизации, то
+            # Если не авторизован и не сообщение начала авторизации, то
             # вызываем исключение.
             if not found:
                 raise TypeError

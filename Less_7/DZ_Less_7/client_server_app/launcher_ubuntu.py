@@ -30,7 +30,7 @@ while True:
     if action == "q":
         break
     elif action == "s":
-        process.append(get_subprocess("server.py"))
+        process.append(get_subprocess("server_side.py"))
 
     elif action == 'k':
         print('Убедитесь, что на сервере зарегистрировано необходимо количество клиентов с паролем 123456.')
