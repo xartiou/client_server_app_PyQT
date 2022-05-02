@@ -1,0 +1,4 @@
+2022-04-21 11:59:42,088 CRITICAL server_log_config.py Test critical event
+2022-04-21 11:59:42,092 ERROR server_log_config.py Test error ivent
+2022-04-21 11:59:42,092 DEBUG server_log_config.py Test debug ivent
+2022-04-21 11:59:42,092 INFO server_log_config.py Test info ivent
