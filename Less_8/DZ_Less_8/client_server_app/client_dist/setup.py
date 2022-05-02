@@ -1,8 +1,8 @@
 from setuptools import setup, find_packages
 
-setup(name="app_client",
+setup(name="xartiou_csa_client",
       version="0.0.0",
-      description="App Client",
+      description="Client Server APP client_side",
       author="Ivan Xartiou",
       author_email="xartiou@gmail.com",
       packages=find_packages(),
